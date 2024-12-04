@@ -105,11 +105,31 @@ plt.ylabel('Log Frequency')
 plt.show()
 
 #%% [markdown]
-# Imputing the mean value for acre_lot
+# Imputing the median value for acre_lot
 #%%
-mean_value = realtordata_no_outliers['acre_lot'].mean()
-realtordata_no_outliers['acre_lot'].fillna(mean_value, inplace=True)
+median_value = realtordata_no_outliers['acre_lot'].median()
+realtordata_no_outliers['acre_lot'].fillna(median_value, inplace=True)
 print("The mean of acre_lot variable before imputing:  ",realtordata_clean.describe()['acre_lot']['mean'] )
 print("The mean of acre_lot variable after imputing:  ", realtordata_no_outliers.describe()['acre_lot']['mean'])
+
+#%%[markdown]
+# Plotting the distribution of house_size variable
 #%%
-# The mean of acre_lot variable remains nearly same.
+
+plt.hist(realtordata_no_outliers['house_size'], bins=40, color='skyblue', edgecolor='black')
+plt.yscale('log')
+plt.title('Distribution of house_size')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
+
+
+
+
+#%% [markdown]
+# Imputing the median value for house_size
+#%%
+median_value = realtordata_no_outliers['house_size'].median()
+realtordata_no_outliers['house_size'].fillna(median_value, inplace=True)
+print("The mean of house_size variable before imputing:  ",realtordata_clean.describe()['house_size']['mean'] )
+print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
