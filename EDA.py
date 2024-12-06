@@ -4,12 +4,15 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns #optional
+import seaborn as sns
+import scipy.stats as stats
+
 
 #%%[markdown]
 # Loading the dataset 
 #%%
-realtordata = pd.read_csv("C:\\Users\\Cashapona\\Documents\\GWU\\Data Mining\\Final Project\\relator-data.csv")
+plt.figure(figsize=(8, 6))
+realtordata = pd.read_csv("/home/anusha/Downloads/realtor-data.zip.csv")
 realtordata.head()
 
 #%%[markdown]
@@ -131,4 +134,52 @@ realtordata_no_outliers['house_size'].fillna(median_value, inplace=True)
 print("The mean of house_size variable before imputing:  ",realtordata_clean.describe()['house_size']['mean'] )
 print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
+#%% [markdown]
+# Plot: Price Distribution
 # %%
+
+sns.boxplot(x=realtordata_no_outliers['price'])
+plt.title('Box Plot of Price')
+plt.xlabel('Price ($)')
+plt.show()
+
+
+#%%
+stats.probplot(realtordata_no_outliers['price'], dist="norm", plot=plt)
+plt.title('Q-Q Plot of Price')
+plt.show()
+#%% [markdown]
+# Plot: Price vs Number of Bedrooms
+
+#%%
+sns.scatterplot(x='bed', y='price', data=realtordata_no_outliers)
+plt.title('Price vs Bedrooms')
+plt.show()
+
+
+#%% [markdown]
+
+# Plot: Price vs House Size
+#%%
+
+sns.scatterplot(x='house_size', y='price', data=realtordata_no_outliers)
+plt.title('Price vs House Size')
+plt.show()
+
+#%% [markdown]
+# Plot: Price vs Acre Lot
+#%%
+sns.scatterplot(x='acre_lot', y='price', data=realtordata_no_outliers)
+plt.title('Price vs Acre Lot')
+plt.show()
+
+#%% [markdown]
+# Correlation heatmap for numerical variables
+
+#%%
+corr = realtordata_no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
+sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Matrix')
+plt.show()
+
+#%%
