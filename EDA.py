@@ -112,8 +112,8 @@ plt.show()
 median_value = realtordata_no_outliers['acre_lot'].median()
 realtordata_no_outliers['acre_lot'].fillna(median_value, inplace=True)
 #%%
-print("The mean of acre_lot variable before imputing:  ",realtordata_clean.describe()['acre_lot']['mean'] )
-print("The mean of acre_lot variable after imputing:  ", realtordata_no_outliers.describe()['acre_lot']['mean'])
+print("The median of acre_lot variable before imputing:  ",realtordata_clean.describe()['acre_lot']['mean'] )
+print("The median of acre_lot variable after imputing:  ", realtordata_no_outliers.describe()['acre_lot']['mean'])
 
 #%%[markdown]
 # Plotting the distribution of house_size variable
@@ -131,55 +131,78 @@ plt.show()
 median_value = realtordata_no_outliers['house_size'].median()
 realtordata_no_outliers['house_size'].fillna(median_value, inplace=True)
 #%%
-print("The mean of house_size variable before imputing:  ",realtordata_clean.describe()['house_size']['mean'] )
-print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
+print("The median of house_size variable before imputing:  ",realtordata_clean.describe()['house_size']['mean'] )
+print("The median of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
 #%% [markdown]
-# Plot: Price Distribution
+# Vizualisations
+
+#%% [markdown]
+# Pivoting data to see how many houses are for_sale in each state
 # %%
+pivot_table = realtordata_no_outliers.pivot_table(
+    index='state', 
+    columns='status', 
+    values='price',  
+    aggfunc='count',
+    fill_value=0  
+)
 
-sns.boxplot(x=realtordata_no_outliers['price'])
-plt.title('Box Plot of Price')
-plt.xlabel('Price ($)')
+print(pivot_table)
+
+# %%
+for_sale_data = realtordata_no_outliers['status']
+state_counts = realtordata_no_outliers['state'].value_counts() # grouping by
+
+top_5_states = state_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_states.index, y=top_5_states.values, palette='viridis')
+
+plt.title('Top 5 States with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('State', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
 plt.show()
 
+# %%
+for_sale_data = realtordata_no_outliers['status']
+city_counts = realtordata_no_outliers['city'].value_counts() # grouping by
 
-#%%
-stats.probplot(realtordata_no_outliers['price'], dist="norm", plot=plt)
-plt.title('Q-Q Plot of Price')
+top_5_cities = city_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_cities.index, y=top_5_cities.values, palette='Spectral')
+
+plt.title('Top 5 Cities with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('City', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
 plt.show()
-#%% [markdown]
-# Plot: Price vs Number of Bedrooms
 
 #%%
 sns.scatterplot(x='bed', y='price', data=realtordata_no_outliers)
 plt.title('Price vs Bedrooms')
 plt.show()
 
-
-#%% [markdown]
-
-# Plot: Price vs House Size
 #%%
-
 sns.scatterplot(x='house_size', y='price', data=realtordata_no_outliers)
 plt.title('Price vs House Size')
 plt.show()
 
-#%% [markdown]
-# Plot: Price vs Acre Lot
 #%%
 sns.scatterplot(x='acre_lot', y='price', data=realtordata_no_outliers)
 plt.title('Price vs Acre Lot')
 plt.show()
-
-#%% [markdown]
-# Correlation heatmap for numerical variables
 
 #%%
 corr = realtordata_no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
 sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
 plt.title('Correlation Matrix')
 plt.show()
-
-#%%
