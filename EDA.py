@@ -52,9 +52,16 @@ plt.ylabel('Log Frequency')
 plt.show()
 
 #%% [markdown]
-# There are a evidently visible outliers in the bed count variable, hence removing outliers w.r.t bed count (only the upper bound).
+# There are evidently visible outliers in the bed count variable, hence removing outliers w.r.t bed count (only the upper bound).
+
 #%%
-upper_bound = 200
+
+Q1 = realtordata_clean['bed'].quantile(0.25)
+Q3 = realtordata_clean['bed'].quantile(0.75)
+
+# Calculate IQR
+IQR = Q3 - Q1
+upper_bound = Q3 + 1.5 * IQR
 realtordata_no_outliers = realtordata_clean[(realtordata_clean['bed'] <= upper_bound)]
 
 #%% [markdown]
@@ -65,6 +72,15 @@ realtordata_no_outliers['bed'].loc[realtordata_no_outliers['bed'].isna()] = rand
 #%%
 print("The mean of bed variable before imputing:  ",realtordata_clean.describe()['bed']['mean'] )
 print("The mean of bed variable after imputing:  ", realtordata_no_outliers.describe()['bed']['mean'])
+
+#%% [markdown]
+# Plotting the distribution of beds variable after removing the outliers.
+#%%
+plt.hist(realtordata_no_outliers['bed'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Distribution of Bed count')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
 
 #%% [markdown]
 # The mean of bed variable remains nearly same.
@@ -206,3 +222,8 @@ corr = realtordata_no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size'
 sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
 plt.title('Correlation Matrix')
 plt.show()
+
+
+
+#%%
+
