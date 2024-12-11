@@ -12,11 +12,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import KMeans
 from sklearn.metrics import r2_score, accuracy_score, silhouette_score
 
-# Business Questions:
-# 1. What are the most significant drivers of house prices, and how can we recommend optimal pricing strategies? (Regression)
-# 2. Can we predict the likelihood of a property being sold or remaining available based on its features? (Classification)
-# 3. How can we cluster properties into distinct market segments for effective targeting? (Clustering)
-# 4. What differentiates clusters, and how can insights from them drive actionable marketing and pricing decisions? (Cluster Profiling)
 
 # Visualization of distributions
 for col in numeric_cols:
