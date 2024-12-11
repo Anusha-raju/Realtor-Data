@@ -1,0 +1,15 @@
+
+# Visualization of distributions
+for col in numeric_cols:
+    plt.figure(figsize=(8, 4))
+    sns.histplot(data[col], kde=True, bins=30, color="blue")
+    plt.title(f"Distribution of {col}")
+    plt.xlabel(col)
+    plt.ylabel("Frequency")
+    plt.show()
+
+# Correlation heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(data[numeric_cols].corr(), annot=True, cmap="coolwarm")
+plt.title("Correlation Heatmap")
+plt.show()
