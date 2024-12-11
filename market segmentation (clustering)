@@ -214,10 +214,7 @@ plt.title('Correlation Heatmap')
 plt.show()
 
 #%%
-
-
-########################################################
-#
+###########################################################
 #%%
 # Import necessary libraries
 from sklearn.cluster import KMeans, DBSCAN
@@ -253,8 +250,9 @@ else:
 kmeans = KMeans(n_clusters=3, random_state=42)
 kmeans_labels = kmeans.fit_predict(data_scaled_sampled)
 
-# Adding K-Means cluster labels to the sampled dataframe
-data_sampled['kmeans_cluster'] = kmeans_labels
+# Map K-Means cluster labels to descriptive names
+kmeans_cluster_mapping = {0: 'High-End', 1: 'Mid-Range', 2: 'Affordable'}
+data_sampled['kmeans_cluster'] = [kmeans_cluster_mapping[label] for label in kmeans_labels]
 
 # Silhouette score for K-Means on sampled data
 kmeans_silhouette = silhouette_score(data_scaled_sampled, kmeans_labels)
@@ -265,8 +263,10 @@ print(f"K-Means Silhouette Score (Sampled Data): {kmeans_silhouette:.2f}")
 dbscan = DBSCAN(eps=0.5, min_samples=10)
 dbscan_labels = dbscan.fit_predict(data_scaled_sampled)
 
-# Adding DBSCAN cluster labels to the sampled dataframe
-data_sampled['dbscan_cluster'] = dbscan_labels
+# Map DBSCAN cluster labels to descriptive names (-1 is noise)
+dbscan_cluster_mapping = {i: f"Cluster {i}" for i in set(dbscan_labels) if i != -1}
+dbscan_cluster_mapping[-1] = 'Noise'
+data_sampled['dbscan_cluster'] = [dbscan_cluster_mapping[label] for label in dbscan_labels]
 
 # Check unique clusters
 unique_clusters = len(set(dbscan_labels) - {-1})  # Exclude noise (-1)
@@ -316,7 +316,7 @@ plt.show()
 sns.scatterplot(
     x=data_sampled['house_size'],
     y=data_sampled['price'],
-    hue=dbscan_labels,
+    hue=data_sampled['dbscan_cluster'],
     palette='cool',
     legend='full'
 )
@@ -325,4 +325,5 @@ plt.xlabel('House Size')
 plt.ylabel('Price')
 plt.legend(title='Cluster')
 plt.show()
+
 # %%
