@@ -215,7 +215,7 @@ plt.show()
 
 #%%
 ###########################################################
-#Markey Segmentation (clustering)
+#Market Segmentation (clustering)
 #%%
 # Import necessary libraries
 from sklearn.cluster import KMeans, DBSCAN
