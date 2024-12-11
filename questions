@@ -1,0 +1,4 @@
+ 1. What are the most significant drivers of house prices, and how can we recommend optimal pricing strategies? (Regression)
+ 2. Can we predict the likelihood of a property being sold or remaining available based on its features? (Classification)
+ 3. How can we cluster properties into distinct market segments for effective targeting? (Clustering)
+ 4. What differentiates clusters, and how can insights from them drive actionable marketing and pricing decisions? (Cluster Profiling)
