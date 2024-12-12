@@ -712,10 +712,7 @@ print(f"Best Broker (ID): {best_broker}")
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import silhouette_score
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+
 #%%
 #############################################
 # Step 1: Sampling the data for efficiency
