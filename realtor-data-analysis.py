@@ -610,10 +610,27 @@ X = no_outliers[features]
 # Standardize the features for better clustering performance
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
+#%% [markdown]
+#### Elbow Method for selecting the optimal number of clusters
+#%%
+wcss = []
+for k in range(1, 100, 10):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_scaled)
+    wcss.append(kmeans.inertia_)
 
+plt.plot(range(1, 100, 10), wcss)
+plt.title('Elbow Method for Optimal k')
+plt.xlabel('Number of Clusters')
+plt.ylabel('WCSS')
+plt.show()
+#%%[markdown]
+
+# The plot shows the Within-Cluster Sum of Squares (WCSS) for different values of k, ranging from 1 to 100, with steps of 10.
+# Choosing number of clusters(n_clusters) is 40, as observed from the plot. 
 #%%
 # Kmeans clustering
-kmeans = KMeans(n_clusters=1000, random_state=1)
+kmeans = KMeans(n_clusters=40, random_state=1)
 no_outliers['cluster'] = kmeans.fit_predict(X_scaled)
 #%%
 import pickle
@@ -638,14 +655,19 @@ cluster_info = pd.read_csv("cluster_info.csv")
 with open('kmeans.pkl', 'rb') as f:
     loaded_kmeans = pickle.load(f)
 #%% [markdown]
-#### Clustering Evaluation using Silhouette Score
+#### Clustering Evaluation using Silhouette Score & Davies Bouldin score
 #%%
 from sklearn.metrics import silhouette_score
-
+from sklearn.metrics import davies_bouldin_score
 # Calculate the silhouette score
 silhouette_avg = silhouette_score(X_scaled, loaded_kmeans.labels_)
-print("For n_clusters =", 1000,
+print("For n_clusters =", 40,
           "The average silhouette_score is :", silhouette_avg)
+
+
+
+db_score = davies_bouldin_score(X_scaled, loaded_kmeans.labels_)
+print(f"Davies-Bouldin Index: {db_score:.4f}")
 
 #%% [markdown]
 # Predicting the highest price and broker for a new house
