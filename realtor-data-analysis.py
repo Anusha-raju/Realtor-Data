@@ -10,14 +10,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import scipy.stats as stats
 
 from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -94,8 +91,6 @@ realtordata_clean = realtordata.dropna(subset=['brokered_by','price','city','sta
 
 # Since the missing values in bed, bath, acre_lot and house_size are significantly high, the values will be imputed.
 
-
-#%%
 # BED
 
 # Visualizing the distribution of bed before outlier removal
@@ -135,6 +130,7 @@ plt.show()
 
 
 #%% 
+
 # BATH
 
 # Visualizing the distribution of bath count before outlier removal
@@ -172,6 +168,7 @@ plt.show()
 
 
 # %%
+
 # ACRE_LOT
 
 # Vizualizing distribution of acre_lot variable
@@ -195,6 +192,7 @@ print("The mean of acre_lot variable after imputing:  ", no_outliers.describe()[
 
 
 #%%
+
 # HOUSE_SIZE
 
 # Vizualizing distribution of house_size variable
@@ -234,6 +232,7 @@ no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
 ########################
 ##   Vizualizations   ##
 ########################
+
 
 data = no_outliers
 
@@ -281,16 +280,197 @@ plt.show()
 
 # Correlation Heatmap of variables
 
-correlation_matrix = data[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
-plt.title('Correlation Heatmap')
+label_encoder_state = LabelEncoder()
+data['state_encoded'] = label_encoder_state.fit_transform(data['state'])
+
+label_encoder_zip = LabelEncoder()
+data['zip_code_encoded'] = label_encoder_zip.fit_transform(data['zip_code'])
+
+label_encoder_city = LabelEncoder()
+data['city_encoded'] = label_encoder_city.fit_transform(data['city'])
+
+correlation_data = data[['price', 'bed', 'bath', 'acre_lot', 'house_size', 
+                         'state_encoded', 'zip_code_encoded', 'city_encoded']]
+
+correlation_matrix = correlation_data.corr()
+
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", square=True)
+plt.title('Correlation Heatmap Including Categorical Variables')
 plt.show()
 
 
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
 
+
+
 #%%
+
+
+###################################
+##   Property Price Prediction   ##
+###################################
+
+
+# Linear Regression 1 - Predicting the price of the property only with numerical variables as predictors
+
+# Assigning predictors and target variable
+
+X = data[['bed', 'bath', 'acre_lot', 'house_size']]
+y = data['price']  
+
+# Scaling the features to avoid bias
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Train-test split
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=0)
+
+# Training the model
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Making predictions on the test set
+
+y_pred_test = model.predict(X_test)
+
+# Making predictions on the training set
+
+y_pred_train = model.predict(X_train)
+
+# Training Set Evaluation
+
+print("Training Set Evaluation:")
+print(f"R²: {r2_score(y_train, y_pred_train):.4f}")
+print(f"MAE: {mean_absolute_error(y_train, y_pred_train):,.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_train, y_pred_train)):,.2f}")
+print("-" * 30)
+
+# Test Set Evaluation
+
+print("Test Set Evaluation:")
+print(f"R²: {r2_score(y_test, y_pred_test):.4f}")
+print(f"MAE: {mean_absolute_error(y_test, y_pred_test):,.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_test, y_pred_test)):,.2f}")
+print("-" * 30)
+
+# Comparing actual vs predicted values
+
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred_test})
+print(df.head())
+
+# Plotting the values 
+
+plt.scatter(y_test, y_pred_test, alpha=0.5)
+plt.title('Actual vs Predicted Prices')
+plt.xlabel('Actual Prices')
+plt.ylabel('Predicted Prices')
+plt.show()
+
+# Insight 
+
+# The low R^2 values for both the training set and the test set indicates that the model is 
+# not capturing much of the variability in the property prices suggesting that, numerical 
+# predictors alone may not be sufficient to explain the price variations. 
+# Additionally, the similar performance on the training and test sets points to underfitting.
+
+#%%
+
+# Linear Regression 2 - Predicting the property price city as a predictor along with numerical variables
+
+# Selecting predictors and target variable
+
+X = data[['bed', 'bath', 'house_size', 'acre_lot', 'city']].copy()  # Explicitly creating a copy to avoid 'SettingWithCopyWarning' because we're modifying a slice of a DataFrame, which can lead to unintended side effects.
+y = data['price']
+
+# Encoding the 'city' variable
+
+label_encoder_city = LabelEncoder()
+X['city'] = label_encoder_city.fit_transform(X['city']) 
+
+# Train-test split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scaling numerical features
+
+scaler = StandardScaler()
+numerical_features = ['bed', 'bath', 'house_size', 'acre_lot']
+X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
+X_test[numerical_features] = scaler.transform(X_test[numerical_features])
+
+# Training the model
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Making predictions on the test set
+
+y_pred_test = model.predict(X_test)
+
+# Making predictions on the training set
+
+y_pred_train = model.predict(X_train)
+
+# Training Set Evaluation
+
+print("Training Set Evaluation:")
+print(f"R²: {r2_score(y_train, y_pred_train):.4f}")
+print(f"MAE: {mean_absolute_error(y_train, y_pred_train):,.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_train, y_pred_train)):,.2f}")
+print("-" * 30)
+
+# Test Set Evaluation
+
+print("Test Set Evaluation:")
+print(f"R²: {r2_score(y_test, y_pred_test):.4f}")
+print(f"MAE: {mean_absolute_error(y_test, y_pred_test):,.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(y_test, y_pred_test)):,.2f}")
+print("-" * 30)
+
+# Comparing actual vs predicted values
+
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred_test})
+print(df.head())
+
+# Plotting the values 
+
+plt.scatter(y_test, y_pred_test, alpha=0.5)
+plt.title('Actual vs Predicted Prices')
+plt.xlabel('Actual Prices')
+plt.ylabel('Predicted Prices')
+plt.show()
+
+# Insight
+
+# The inclusion of city variable slightly improved the model's predictive ability for the test set, 
+# as seen in the increase of R^2 score. This suggests that the city variable captures some location-specific 
+# variation in property prices, which was missing in the first model. However, the improvement 
+# is relatively very small, with a significant amount of unexplained variability in property prices
+# And the R^2 for training set remains low and identical to first model showcasing underfitting.
+
+# Overall insights
+
+# Both the models show very low R^2 values on the training set and marginally better performance on 
+# the test sets. This consistent low R^2 indicates that the models fail to capture most of 
+# the variability in property prices, suggesting weak or non-existent linear relationships 
+# between the predictors and the target variable. While adding city to the model slighty 
+# improved test score, it wasn't sufficient to improve model predictions. We can also see the 
+# reflection of consistent underfitting.
+
+
+##################################################
+#<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
+
+
+
+#%%
+
 
 ##################################################
 #<<<<<<<<<<<<<<<< BROKER ANALYSIS >>>>>>>>>>>>>>>>#
