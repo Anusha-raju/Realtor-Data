@@ -1,5 +1,5 @@
 
-#%%
+# %%
 
 
 #############
@@ -84,6 +84,60 @@ realtordata_clean = realtordata.dropna(subset=['brokered_by','price','city','sta
 
 
 # %%
+
+
+#######################
+##   Vizualizations  ##
+#######################
+
+
+# Plotting to see the top states with highest number of house sales
+
+for_sale_data = realtordata_clean['status']
+state_counts = realtordata_clean['state'].value_counts() # grouping by
+
+top_5_states = state_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_states.index, y=top_5_states.values, palette='viridis')
+
+plt.title('Top 5 States with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('State', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
+plt.show()
+
+# %%
+
+# Plotting to see the top cities with highest number of house sales
+
+for_sale_data = realtordata_clean['status']
+city_counts = realtordata_clean['city'].value_counts() # grouping by
+
+top_5_cities = city_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_cities.index, y=top_5_cities.values, palette='Spectral')
+
+plt.title('Top 5 Cities with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('City', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
+plt.show()
+
+
+##################################################
+#<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
+
+
+
+#%%
 
 
 ########################
@@ -231,54 +285,13 @@ no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
 # %%
 
 
-########################
-##   Vizualizations   ##
-########################
+#################
+##   Heatmap   ##
+#################
 
 
 data = no_outliers
 
-# Plotting to see the top states with highest number of house sales
-
-for_sale_data = data['status']
-state_counts = data['state'].value_counts() # grouping by
-
-top_5_states = state_counts.head(5)
-
-plt.figure(figsize=(10, 6))
-sns.barplot(x=top_5_states.index, y=top_5_states.values, palette='viridis')
-
-plt.title('Top 5 States with the Highest Number of Houses For Sales', fontsize=14)
-plt.xlabel('State', fontsize=12)
-plt.ylabel('Number of Houses For_Sale', fontsize=12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
-
-plt.tight_layout()
-plt.show()
-
-# %%
-
-# Plotting to see the top cities with highest number of house sales
-
-for_sale_data = data['status']
-city_counts = data['city'].value_counts() # grouping by
-
-top_5_cities = city_counts.head(5)
-
-plt.figure(figsize=(10, 6))
-sns.barplot(x=top_5_cities.index, y=top_5_cities.values, palette='Spectral')
-
-plt.title('Top 5 Cities with the Highest Number of Houses For Sales', fontsize=14)
-plt.xlabel('City', fontsize=12)
-plt.ylabel('Number of Houses For_Sale', fontsize=12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
-
-plt.tight_layout()
-plt.show()
-
-# %%
 
 # Correlation Heatmap of variables
 
