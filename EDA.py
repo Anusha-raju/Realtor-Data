@@ -107,7 +107,6 @@ realtordata_no_outliers = realtordata_no_outliers[(realtordata_no_outliers['bath
 #%% [markdown]
 # Imputing a random value between the max and min of bath variable count.
 
-#%%
 random_values = np.random.uniform(realtordata_no_outliers['bath'].min(), realtordata_no_outliers['bath'].max(), size=realtordata_no_outliers['bath'].isna().sum())
 realtordata_no_outliers['bath'].loc[realtordata_no_outliers['bath'].isna()] = random_values
 #%%
@@ -162,7 +161,7 @@ print("The mean of house_size variable before imputing:  ",realtordata_no_outlie
 #%%
 mean_value = realtordata_no_outliers['house_size'].mean()
 realtordata_no_outliers['house_size'].fillna(mean_value, inplace=True)
-#%%
+
 print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
 #%% [markdown]
