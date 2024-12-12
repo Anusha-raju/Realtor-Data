@@ -293,6 +293,7 @@ def predict_price_and_broker(new_house_features):
 #%%
 cluster_info = pd.read_csv("cluster_info.csv")
 
+
 with open('kmeans.pkl', 'rb') as f:
     loaded_kmeans = pickle.load(f)
 # Example: Predict for a new house
@@ -302,6 +303,10 @@ highest_price, best_broker = predict_price_and_broker(new_house_data)
 print(f"Predicted Highest Price: ${highest_price}")
 print(f"Best Broker (ID): {best_broker}")
 
+#%%
+from sklearn.metrics import silhouette_score
 
-
-
+# Calculate the silhouette score
+silhouette_avg = silhouette_score(X_scaled, loaded_kmeans.labels_)
+print("For n_clusters =", 1000,
+          "The average silhouette_score is :", silhouette_avg)
