@@ -1,0 +1,54 @@
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+import pandas as pd
+import matplotlib.pyplot as plt
+import joblib
+
+# Prepare features and target variable
+X = realtordata_clean[['house_size', 'bed', 'bath', 'acre_lot','street','zip_code','house_size','price','brokered_by']]
+y = realtordata_clean['status']  # Assuming 'status' is the column for listing status
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=42)
+
+# Initialize and train the Random Forest Classifier
+clf = RandomForestClassifier(random_state=42)
+clf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = clf.predict(X_test)
+
+# Evaluate the model
+print(classification_report(y_test, y_pred))
+
+# Feature Importance Plot
+importances = clf.feature_importances_
+plt.figure(figsize=(10, 6))
+plt.barh(X.columns, importances)
+plt.xlabel('Feature Importance')
+plt.title('Random Forest Feature Importance')
+plt.show()
+
+# Cross-validation
+cv_scores = cross_val_score(clf, X, y, cv=5, scoring='accuracy')
+print(f"Cross-validation accuracy: {cv_scores.mean()}")
+
+# Hyperparameter tuning with GridSearchCV
+param_grid = {
+    'n_estimators': [50, 100, 200,500,1000,2000,5000],
+    'max_depth': [5, 10, 20],
+    'min_samples_split': [2, 5],
+}
+grid_search = GridSearchCV(RandomForestClassifier(random_state=42), param_grid, cv=5, scoring='accuracy')
+grid_search.fit(X_train, y_train)
+
+print(f"Best hyperparameters: {grid_search.best_params_}")
+best_model = grid_search.best_estimator_
+
+# Evaluate the best model
+y_pred_best = best_model.predict(X_test)
+print(classification_report(y_test, y_pred_best))
+
+# Save the best model
+joblib.dump(best_model, 'random_forest_model.pkl')

@@ -1,0 +1,330 @@
+
+#%% [markdown]
+# Importing necessary libraries
+#%%
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns #optional
+
+#%%[markdown]
+# Loading the dataset 
+#%%
+realtordata = pd.read_csv("realtor data.csv")
+print(realtordata.columns)
+realtordata.head()
+
+#%%[markdown]
+# Preprocessing the data
+
+#%%[markdown]
+# Descriptive statistics of numerical columns of Realtor data.
+#%%
+realtordata[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
+
+#%%[markdown]
+# The total number of missing values in the dataset.
+#%%
+print(realtordata.isnull().sum())
+
+#%%[markdown]
+# Dropping the prev_sold_date column as it does not contribute to the analysis.
+#%%
+realtordata.drop(columns = ['prev_sold_date', 'street'], axis=1, inplace=True)
+
+#%% [markdown]
+# Dropping data points where brokered_by,price,city,state,zip_code are missing as they constitute a very small number of the dataset.
+#%%
+realtordata_clean = realtordata.dropna(subset=['brokered_by','price','city','state','zip_code'])
+
+#%%[markdown]
+# Since the missing values in bed, bath, acre_lot and house_size are significantly high, the values will be imputed.
+
+#%%[markdown]
+# Plotting the distribution of beds variable
+#%%
+plt.hist(realtordata_clean['bed'], bins=30, color='skyblue', edgecolor='black')
+plt.yscale('log') 
+plt.title('Distribution of Bed count')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
+
+#%%
+Q1 = realtordata_clean['bed'].quantile(0.25)
+Q3 = realtordata_clean['bed'].quantile(0.75)
+
+IQR = Q3 - Q1
+upper_bound = Q3 + 1.5 * IQR
+print(upper_bound)
+no_outliers = realtordata_clean[(realtordata_clean['bed'] <= upper_bound)]
+
+random_values = np.random.uniform(no_outliers['bed'].min(), no_outliers['bed'].max(), size=no_outliers['bed'].isna().sum())
+no_outliers.loc[no_outliers['bed'].isna(), 'bed'] = random_values
+
+sns.histplot(no_outliers['bed'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Distribution of Bed Count After Removing Outliers')
+plt.xlabel('Number of Bathrooms')
+plt.ylabel('Frequency')
+plt.show()
+
+#%% 
+# Calculate Q1, Q3, and IQR for bath
+Q1_bath = realtordata_clean['bath'].quantile(0.25)
+Q3_bath = realtordata_clean['bath'].quantile(0.75)
+IQR_bath = Q3_bath - Q1_bath
+
+# Define upper bound for bath (lower bound is not needed for bath since negative bathrooms don't make sense)
+upper_bound_bath = Q3_bath + 1.5 * IQR_bath
+print(f"Upper Bound for Bath: {upper_bound_bath}")
+
+# Remove outliers for bath
+no_outliers_bath = no_outliers[no_outliers['bath'] <= upper_bound_bath]
+
+# Impute missing values in bath with the median
+median_bath = no_outliers_bath['bath'].median()
+no_outliers_bath['bath'].fillna(median_bath)
+
+# Visualize the distribution of bath after outlier removal
+sns.histplot(no_outliers_bath['bath'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Distribution of Bath Count After Removing Outliers')
+plt.xlabel('Number of Bathrooms')
+plt.ylabel('Frequency')
+plt.show()
+
+# %%
+#%% [Acre Lot Outlier Removal]
+# Calculate Q1, Q3, and IQR for acre_lot
+Q1_acre = no_outliers_bath['acre_lot'].quantile(0.25)
+Q3_acre = no_outliers_bath['acre_lot'].quantile(0.75)
+IQR_acre = Q3_acre - Q1_acre
+
+# Define lower and upper bounds for acre_lot
+lower_bound_acre = Q1_acre - 1.5 * IQR_acre
+upper_bound_acre = Q3_acre + 1.5 * IQR_acre
+print(f"Lower Bound for Acre Lot: {lower_bound_acre}")
+print(f"Upper Bound for Acre Lot: {upper_bound_acre}")
+
+# Remove outliers for acre_lot
+no_outliers_acre = no_outliers_bath[
+    (no_outliers_bath['acre_lot'] >= lower_bound_acre) &
+    (no_outliers_bath['acre_lot'] <= upper_bound_acre)
+]
+
+# Impute missing values in acre_lot with the median
+median_acre = no_outliers_acre['acre_lot'].median()
+no_outliers_acre['acre_lot'].fillna(median_acre)
+
+# Visualize the distribution of acre_lot after outlier removal
+sns.histplot(no_outliers_acre['acre_lot'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Distribution of Acre Lot After Removing Outliers')
+plt.xlabel('Acre Lot')
+plt.ylabel('Frequency')
+plt.show()
+
+# %%
+# Calculate IQR and bounds for house_size
+Q1_size = no_outliers_acre['house_size'].quantile(0.25)
+Q3_size = no_outliers_acre['house_size'].quantile(0.75)
+IQR_size = Q3_size - Q1_size
+
+lower_bound_size = Q1_size - 1.5 * IQR_size
+upper_bound_size = Q3_size + 1.5 * IQR_size
+print(f"Lower Bound for House Size: {lower_bound_size}")
+print(f"Upper Bound for House Size: {upper_bound_size}")
+
+# Filter out outliers for house_size
+no_outliers_size = no_outliers_acre[
+    (no_outliers_acre['house_size'] >= lower_bound_size) &
+    (no_outliers_acre['house_size'] <= upper_bound_size)].copy()  # Use .copy() to create an independent DataFrame
+
+# Impute missing values in house_size with the median
+median_size = no_outliers_size['house_size'].median()
+no_outliers_size['house_size'] = no_outliers_size['house_size'].fillna(median_size)
+
+
+# Visualize the distribution of house_size after removing outliers
+sns.histplot(no_outliers_size['house_size'], bins=30, color='skyblue', edgecolor='black')
+plt.title('Distribution of House Size After Removing Outliers')
+plt.xlabel('House Size')
+plt.ylabel('Frequency')
+plt.show()
+
+# %%
+no_outliers = no_outliers_size
+
+# %%
+no_outliers.info()
+
+# %%
+no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
+
+# %%
+pivot_table = no_outliers.pivot_table(
+    index='state', 
+    columns='status', 
+    values='price',  
+    aggfunc='count',
+    fill_value=0  
+)
+
+print(pivot_table)
+
+# %%
+for_sale_data = no_outliers['status']
+state_counts = no_outliers['state'].value_counts() # grouping by
+
+top_5_states = state_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_states.index, y=top_5_states.values, palette='viridis')
+
+plt.title('Top 5 States with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('State', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
+plt.show()
+
+# %%
+for_sale_data = no_outliers['status']
+city_counts = no_outliers['city'].value_counts() # grouping by
+
+top_5_cities = city_counts.head(5)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_5_cities.index, y=top_5_cities.values, palette='Spectral')
+
+plt.title('Top 5 Cities with the Highest Number of Houses For Sales', fontsize=14)
+plt.xlabel('City', fontsize=12)
+plt.ylabel('Number of Houses For_Sale', fontsize=12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+
+plt.tight_layout()
+plt.show()
+
+# %%
+# Correlation heatmap
+correlation_matrix = no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Heatmap')
+plt.show()
+
+#%%
+###########################################################
+#Market Segmentation (clustering)
+#%%
+# Import necessary libraries
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+#%%
+# Selecting the features for clustering
+features = ['price', 'house_size', 'bed', 'bath', 'acre_lot']
+data_for_clustering = no_outliers[features]
+
+#%%
+# Scaling the data
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data_for_clustering)
+
+#%%
+# Sampling the data for manageable computation
+sample_size = 100000  # Adjust sample size based on your system's capacity
+if data_for_clustering.shape[0] > sample_size:
+    data_sampled = data_for_clustering.sample(n=sample_size, random_state=42)
+    data_scaled_sampled = scaler.fit_transform(data_sampled)
+else:
+    data_sampled = data_for_clustering
+    data_scaled_sampled = data_scaled
+
+#%%
+# ----------- K-Means Clustering -----------
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans_labels = kmeans.fit_predict(data_scaled_sampled)
+
+# Map K-Means cluster labels to descriptive names
+kmeans_cluster_mapping = {0: 'High-End', 1: 'Mid-Range', 2: 'Affordable'}
+data_sampled['kmeans_cluster'] = [kmeans_cluster_mapping[label] for label in kmeans_labels]
+
+# Silhouette score for K-Means on sampled data
+kmeans_silhouette = silhouette_score(data_scaled_sampled, kmeans_labels)
+print(f"K-Means Silhouette Score (Sampled Data): {kmeans_silhouette:.2f}")
+
+#%%
+# ----------- DBSCAN Clustering -----------
+dbscan = DBSCAN(eps=0.5, min_samples=10)
+dbscan_labels = dbscan.fit_predict(data_scaled_sampled)
+
+# Map DBSCAN cluster labels to descriptive names (-1 is noise)
+dbscan_cluster_mapping = {i: f"Cluster {i}" for i in set(dbscan_labels) if i != -1}
+dbscan_cluster_mapping[-1] = 'Noise'
+data_sampled['dbscan_cluster'] = [dbscan_cluster_mapping[label] for label in dbscan_labels]
+
+# Check unique clusters
+unique_clusters = len(set(dbscan_labels) - {-1})  # Exclude noise (-1)
+print(f"Number of DBSCAN clusters (excluding noise): {unique_clusters}")
+
+# Silhouette score for DBSCAN (only if there are valid clusters)
+if unique_clusters > 1:
+    dbscan_silhouette = silhouette_score(data_scaled_sampled[dbscan_labels != -1],
+                                         dbscan_labels[dbscan_labels != -1])
+    print(f"DBSCAN Silhouette Score (Sampled Data): {dbscan_silhouette:.2f}")
+else:
+    print("DBSCAN clustering did not form valid clusters.")
+
+#%%
+# ----------- Model Comparison -----------
+print("\nModel Comparison:")
+model_scores = {
+    "K-Means": kmeans_silhouette,
+    "DBSCAN": dbscan_silhouette if 'dbscan_silhouette' in locals() else None
+}
+
+for model, score in model_scores.items():
+    if score is not None:
+        print(f"{model}: Silhouette Score = {score:.2f}")
+    else:
+        print(f"{model}: Not applicable")
+
+# Selecting the best model based on the highest Silhouette Score
+best_model = max((score, model) for model, score in model_scores.items() if score is not None)
+print(f"\nBest Model: {best_model[1]} with Silhouette Score = {best_model[0]:.2f}")
+
+#%%
+# Visualization of Clusters
+sns.scatterplot(
+    x=data_sampled['house_size'],
+    y=data_sampled['price'],
+    hue=data_sampled['kmeans_cluster'],
+    palette='viridis',
+    legend='full'
+)
+plt.title('K-Means Clustering Visualization')
+plt.xlabel('House Size')
+plt.ylabel('Price')
+plt.legend(title='Cluster')
+plt.show()
+
+sns.scatterplot(
+    x=data_sampled['house_size'],
+    y=data_sampled['price'],
+    hue=data_sampled['dbscan_cluster'],
+    palette='cool',
+    legend='full'
+)
+plt.title('DBSCAN Clustering Visualization')
+plt.xlabel('House Size')
+plt.ylabel('Price')
+plt.legend(title='Cluster')
+plt.show()
+
+# %%
