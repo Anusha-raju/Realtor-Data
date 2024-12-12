@@ -234,11 +234,12 @@ no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
 ##   Vizualizations   ##
 ########################
 
+data = no_outliers
 
 # Plotting to see the top states with highest number of house sales
 
-for_sale_data = no_outliers['status']
-state_counts = no_outliers['state'].value_counts() # grouping by
+for_sale_data = data['status']
+state_counts = data['state'].value_counts() # grouping by
 
 top_5_states = state_counts.head(5)
 
@@ -258,8 +259,8 @@ plt.show()
 
 # Plotting to see the top cities with highest number of house sales
 
-for_sale_data = no_outliers['status']
-city_counts = no_outliers['city'].value_counts() # grouping by
+for_sale_data = data['status']
+city_counts = data['city'].value_counts() # grouping by
 
 top_5_cities = city_counts.head(5)
 
@@ -279,7 +280,7 @@ plt.show()
 
 # Correlation Heatmap of variables
 
-correlation_matrix = no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
+correlation_matrix = data[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Heatmap')
 plt.show()
