@@ -178,7 +178,7 @@ no_outliers.loc[no_outliers['bed'].isna(), 'bed'] = random_values
 
 # Visualizing the distribution of bed after outlier removal
 
-sns.histplot(no_outliers['bed'], bins=30, color='skyblue', edgecolor='black')
+sns.histplot(no_outliers['bed'], bins=30, color='lightgreen', edgecolor='black')
 plt.title('Distribution of Bed Count After Removing Outliers')
 plt.xlabel('Number of Bedrooms')
 plt.ylabel('Frequency')
@@ -216,7 +216,7 @@ no_outliers.loc[no_outliers['bath'].isna(),'bath'] = random_values
 
 # Visualizing the distribution of bath after outlier removal
 
-sns.histplot(no_outliers['bath'], bins=30, color='skyblue', edgecolor='black')
+sns.histplot(no_outliers['bath'], bins=30, color='lightgreen', edgecolor='black')
 plt.title('Distribution of Bath Count After Removing Outliers')
 plt.xlabel('Number of Bathrooms')
 plt.ylabel('Frequency')
@@ -227,60 +227,60 @@ plt.show()
 
 # ACRE_LOT
 
-# Vizualizing distribution of acre_lot variable
-
-plt.hist(no_outliers['acre_lot'], bins=40, color='skyblue', edgecolor='black')
+# Visualizing distribution of acre_lot variable before imputing
+plt.hist(no_outliers['acre_lot'].dropna(), bins=40, color='skyblue', edgecolor='black')
 plt.yscale('log')
-plt.title('Distribution of acre_lot')
+plt.title('Distribution of acre_lot (Before Imputation)')
 plt.xlabel('Value')
 plt.ylabel('Log Frequency')
 plt.show()
 
-print("The mean of acre_lot variable before imputing:  ", no_outliers.describe()['acre_lot']['mean'] )
+print("The mean of acre_lot variable before imputing:  ", no_outliers['acre_lot'].mean())
 
 # Imputing the mean value for acre_lot
-
 mean_value = no_outliers['acre_lot'].mean()
 no_outliers['acre_lot'].fillna(mean_value, inplace=True)
 
-
-print("The mean of acre_lot variable after imputing:  ", no_outliers.describe()['acre_lot']['mean'])
-
-
-#%%
-
-# HOUSE_SIZE
-
-# Vizualizing distribution of house_size variable
-
-plt.hist(no_outliers['house_size'], bins=40, color='skyblue', edgecolor='black')
+# Visualizing distribution of acre_lot variable after imputing
+plt.hist(no_outliers['acre_lot'], bins=40, color='lightgreen', edgecolor='black')
 plt.yscale('log')
-plt.title('Distribution of house_size')
+plt.title('Distribution of acre_lot (After Imputation)')
 plt.xlabel('Value')
 plt.ylabel('Log Frequency')
 plt.show()
 
-print("The mean of house_size variable before imputing:  ", no_outliers.describe()['house_size']['mean'] )
+print("The mean of acre_lot variable after imputing:  ", no_outliers['acre_lot'].mean())
+
+# %%
+
+# HOUSE_SIZE
+
+# Visualizing distribution of house_size variable before imputing
+plt.hist(no_outliers['house_size'].dropna(), bins=40, color='skyblue', edgecolor='black')
+plt.yscale('log')
+plt.title('Distribution of house_size (Before Imputation)')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
+
+print("The mean of house_size variable before imputing:  ", no_outliers['house_size'].mean())
 
 # Imputing the mean value for house_size
-
 mean_value = no_outliers['house_size'].mean()
 no_outliers['house_size'].fillna(mean_value, inplace=True)
 
-print("The mean of house_size variable after imputing:  ", no_outliers.describe()['house_size']['mean'])
+# Visualizing distribution of house_size variable after imputing
+plt.hist(no_outliers['house_size'], bins=40, color='lightgreen', edgecolor='black')
+plt.yscale('log')
+plt.title('Distribution of house_size (After Imputation)')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
 
-
-# %%
-no_outliers.info()
-
-# %%
-no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].describe()
-
+print("The mean of house_size variable after imputing:  ", no_outliers['house_size'].mean())
 
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
-
-
 
 # %%
 
