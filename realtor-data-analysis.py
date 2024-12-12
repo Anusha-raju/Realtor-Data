@@ -487,3 +487,148 @@ print(f"Best Broker (ID): {best_broker}")
 
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
+
+#%%
+#############################################
+# Import necessary libraries
+#############################################
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.metrics import silhouette_score
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+#%%
+#############################################
+# Step 1: Sampling the data for efficiency
+#############################################
+# Limit data to 1,000 samples per state to ensure a manageable dataset for clustering.
+sample_per_state = 1000  # Number of samples per state
+
+sampled_data = (
+    no_outliers.groupby('state', group_keys=False)
+    .apply(lambda x: x.sample(n=min(len(x), sample_per_state), random_state=42))
+    .reset_index(drop=True)
+)
+
+# Check the resulting dataset
+print(f"Sampled data shape: {sampled_data.shape}")
+print(sampled_data['state'].value_counts())  # Verify sample distribution across states
+#%%
+#############################################
+# Step 2: Data Preprocessing
+#############################################
+
+# 2.1 Scale numerical features
+numeric_features = ['price', 'house_size', 'bed', 'bath', 'acre_lot']
+scaler = StandardScaler()
+scaled_numeric = scaler.fit_transform(sampled_data[numeric_features])  # Normalize data
+
+# 2.2 Encode categorical features (city, state)
+categorical_features = ['city', 'state']
+encoder = OneHotEncoder()
+encoded_categorical = encoder.fit_transform(sampled_data[categorical_features]).toarray()
+
+# 2.3 Combine scaled numerical and encoded categorical data
+data_scaled_sampled = np.hstack((scaled_numeric, encoded_categorical))
+print(f"Combined scaled data shape: {data_scaled_sampled.shape}")
+#%%
+#############################################
+# Step 3: Determine Optimal Clusters using Elbow Method
+#############################################
+silhouette_scores = []
+for k in range(2, 10):  # Test cluster numbers from 2 to 9
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    labels = kmeans.fit_predict(data_scaled_sampled)
+    silhouette_scores.append(silhouette_score(data_scaled_sampled, labels))
+
+# Plot silhouette scores to find the "elbow" point
+plt.plot(range(2, 10), silhouette_scores, marker='o')
+plt.title("Elbow Method with Silhouette Score")
+plt.xlabel("Number of Clusters")
+plt.ylabel("Silhouette Score")
+plt.show()
+
+# Outcome: The optimal number of clusters is 3.
+#%%
+#############################################
+# Step 4: Apply K-Means Clustering
+#############################################
+optimal_clusters = 3  # Based on Elbow Method
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
+sampled_data['kmeans_cluster'] = kmeans.fit_predict(data_scaled_sampled)
+#%%
+#############################################
+# Step 5: Composite Scoring
+#############################################
+# Combine scaled numeric and encoded categorical feature names
+encoded_feature_names = encoder.get_feature_names_out(categorical_features)
+features = numeric_features + list(encoded_feature_names)
+
+# Extract one-hot encoded features for state and city
+state_features = [feature for feature in encoded_feature_names if feature.startswith('state_')]
+city_features = [feature for feature in encoded_feature_names if feature.startswith('city_')]
+
+# Create a DataFrame for cluster centroids
+centroids = pd.DataFrame(kmeans.cluster_centers_, columns=features)
+
+# Assign weights for composite scoring
+weights = {
+    'price': 0.4,
+    'house_size': 0.3,
+    'bed': 0.1,
+    'bath': 0.1,
+    'acre_lot': 0.05,
+    'state': 0.05,  # All state features combined
+    'city': 0.05    # All city features combined
+}
+
+# Compute composite score for each cluster
+centroids['composite_score'] = (
+    centroids['price'] * weights['price'] +
+    centroids['house_size'] * weights['house_size'] +
+    centroids['bed'] * weights['bed'] +
+    centroids['bath'] * weights['bath'] +
+    centroids['acre_lot'] * weights['acre_lot'] +
+    centroids[state_features].sum(axis=1) * weights['state'] +
+    centroids[city_features].sum(axis=1) * weights['city']
+)
+
+# Sort centroids by composite score and assign categories
+sorted_centroids = centroids.sort_values(by='composite_score').reset_index()
+cluster_mapping = {sorted_centroids.iloc[i].name: label for i, label in enumerate(['Affordable', 'Mid-Range', 'High-End'])}
+sampled_data['category'] = sampled_data['kmeans_cluster'].map(cluster_mapping)
+
+# Outcome: Each property is categorized into Affordable, Mid-Range, or High-End.
+#%%
+#############################################
+# Step 6: Visualization
+#############################################
+# Scatter plot of house size vs. price, colored by category
+sns.scatterplot(
+    x=sampled_data['house_size'],
+    y=sampled_data['price'],
+    hue=sampled_data['category'],
+    palette='coolwarm',
+    legend='full'
+)
+plt.title('K-Means Clustering on Sampled Data: Price vs House Size')
+plt.xlabel('House Size')
+plt.ylabel('Price')
+plt.legend(title='Category')
+plt.show()
+
+# Outcome: Visual confirmation of clustering with distinct categories.
+#%%
+#############################################
+# Step 7: Evaluate Clustering Quality
+#############################################
+# Calculate silhouette score for the final clustering
+silhouette_avg = silhouette_score(data_scaled_sampled, sampled_data['kmeans_cluster'])
+print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:.2f}")
+
+# Outcome: The silhouette score  0.20 indicates modest cluster quality.
+
+##################################################
+#<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
