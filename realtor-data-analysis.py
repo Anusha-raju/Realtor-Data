@@ -374,8 +374,8 @@ plt.xlabel('Actual Prices')
 plt.ylabel('Predicted Prices')
 plt.show()
 
-# Insight 
-
+# Insights: 
+#
 # The low R^2 values for both the training set and the test set indicates that the model is 
 # not capturing much of the variability in the property prices suggesting that, numerical 
 # predictors alone may not be sufficient to explain the price variations. 
@@ -642,17 +642,9 @@ cluster_info = pd.read_csv("cluster_info.csv")
 with open('kmeans.pkl', 'rb') as f:
     loaded_kmeans = pickle.load(f)
 #%% [markdown]
-#### Clustering Evaluation using Silhouette Score & Davies Bouldin score
+#### Clustering Evaluation using Davies Bouldin score
 #%%
-from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
-# Calculate the silhouette score
-silhouette_avg = silhouette_score(X_scaled, loaded_kmeans.labels_)
-print("For n_clusters =", 40,
-          "The average silhouette_score is :", silhouette_avg)
-
-
-
 db_score = davies_bouldin_score(X_scaled, loaded_kmeans.labels_)
 print(f"Davies-Bouldin Index: {db_score:.4f}")
 
