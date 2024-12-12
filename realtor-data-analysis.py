@@ -606,7 +606,7 @@ for k in range(1, 100, 10):
     kmeans.fit(X_scaled)
     wcss.append(kmeans.inertia_)
 
-plt.plot(range(1, 11), wcss)
+plt.plot(range(1, 100, 10), wcss)
 plt.title('Elbow Method for Optimal k')
 plt.xlabel('Number of Clusters')
 plt.ylabel('WCSS')
