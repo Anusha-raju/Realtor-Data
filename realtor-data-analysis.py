@@ -290,4 +290,200 @@ plt.show()
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
 
+#%%
 
+##################################################
+#<<<<<<<<<<<<<<<< BROKER ANALYSIS >>>>>>>>>>>>>>>>#
+
+
+#%% [markdown]
+#### Grouping by broker to calculate average price per broker
+
+#%%
+
+broker_performance = no_outliers.groupby('brokered_by')['price'].agg(['mean', 'median', 'std', 'count'])
+print("Broker Performance (Average Price, Median Price, Std Deviation, Count of Listings):")
+print(broker_performance)
+
+#%%[markdown]
+
+# This code aggregates real estate data by the broker and computes the average (mean), median, standard deviation (std), and count of listings.
+# Understanding broker performance helps identify which brokers are handling the highest value properties and their consistency in price.
+
+#%% [markdown]
+#### Price by house_size (median price per house size range)
+
+#%%
+no_outliers['house_size_category'] = pd.cut(no_outliers['house_size'], bins=[0, no_outliers['house_size'].quantile(0.25), no_outliers['house_size'].quantile(0.50), no_outliers['house_size'].quantile(0.75)], labels=['Small', 'Medium', 'Large'])
+house_size_performance = no_outliers.groupby(['brokered_by', 'house_size_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by House Size:")
+print(house_size_performance)
+
+#%%[markdown]
+# The data is categorized into 'Small', 'Medium', and 'Large' based on house size quantiles. The average price by broker and house size category is then calculated.
+# Helps identify if brokers specialize in specific types of houses (small, medium, or large) and how that impacts pricing.
+
+#%% [markdown]
+#### Price by Number of Bedrooms (Categorizing Bedrooms)
+
+#%%
+no_outliers['bed_category'] = pd.cut(no_outliers['bed'], bins=list(range(int(no_outliers['bed'].min()-1), int(no_outliers['bed'].max())))
+, labels=list(range(int(no_outliers['bed'].min()), int(no_outliers['bed'].max())))
+)
+bed_performance = no_outliers.groupby(['brokered_by', 'bed_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by Number of Bedrooms:")
+print(bed_performance)
+
+#%% [markdown]
+# Bedrooms are categorized into ranges, and performance is assessed by broker for each category.
+# This helps to analyze how brokers perform with properties of different bedroom counts, which is useful for targeting specific buyer needs.
+
+#%% [markdown]
+#### Price by lot size (acre_lot)
+
+#%%
+no_outliers['lot_size_category'] = pd.cut(no_outliers['acre_lot'], bins=[0, no_outliers['acre_lot'].quantile(0.25), no_outliers['acre_lot'].quantile(0.50), no_outliers['acre_lot'].quantile(0.75)], labels=['Small', 'Medium', 'Large'])
+lot_size_performance = no_outliers.groupby(['brokered_by', 'lot_size_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by Lot Size:")
+print(lot_size_performance)
+#%% [markdown]
+# Similar to the house size, properties are grouped by lot size and broker performance is calculated.
+# This gives insight into how brokers handle large versus small lots, which can influence property pricing strategies.
+#%% [markdown]
+#### Segment-wise Analysis of Brokers
+#%%
+# brokers with the highest average prices
+top_brokers_by_price = broker_performance.sort_values(by='mean', ascending=False).head()
+
+# brokers that perform best in specific categories
+top_broker_for_large_houses = house_size_performance.loc[house_size_performance['mean'].idxmax()]
+top_broker_for_larger_beds = bed_performance.loc[bed_performance['mean'].idxmax()]
+top_broker_for_large_lots = lot_size_performance.loc[lot_size_performance['mean'].idxmax()]
+
+# Output Results
+print("\nTop Brokers by Average Price:")
+print(top_brokers_by_price)
+
+print("\nTop Broker for Large Houses:")
+print(top_broker_for_large_houses)
+
+print("\nTop Broker for Larger Beds:")
+print(top_broker_for_larger_beds)
+
+print("\nTop Broker for Large Acre Lots:")
+print(top_broker_for_large_lots)
+
+#%%
+########################
+##   MODELLING   ##
+########################
+
+########################
+##   IMPORTS   ##
+########################
+
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.cluster import KMeans
+#%%[markdown]
+# In the below colab file, we train a ML model that will help in identifying the most suitable broker for a given property based on historical performance and clustering.
+#
+#To explore the model training process, you can access the full code and notebook for the model training on Google Colab using the link below:
+#
+#[**Realtor Data Clusttering**](https://colab.research.google.com/drive/1NedKECbrV9Uat5GMw3Up_8gZfsl5_YCe?usp=sharing)
+#
+#[https://colab.research.google.com/drive/1NedKECbrV9Uat5GMw3Up_8gZfsl5_YCe?usp=sharing](https://colab.research.google.com/drive/1NedKECbrV9Uat5GMw3Up_8gZfsl5_YCe?usp=sharing)
+#%% [markdown]
+# Encode categorical variables
+#%%
+no_outliers['zip_code'] = no_outliers['zip_code'].astype(int)
+no_outliers['brokered_by'] = no_outliers['brokered_by'].astype(int)
+label_encoder_city = LabelEncoder()
+label_encoder_state = LabelEncoder()
+label_encoder_broker = LabelEncoder()
+
+no_outliers['city'] = label_encoder_city.fit_transform(no_outliers['city'])
+no_outliers['state'] = label_encoder_state.fit_transform(no_outliers['state'])
+no_outliers['brokered_by'] = label_encoder_broker.fit_transform(no_outliers['brokered_by'])
+#%% [markdown]
+# This preprocessing step converts non-numeric data (city, state, broker) into a form suitable for clustering, helping identify broker performance patterns based on multiple features.
+
+#%%
+# Select features for clustering
+features = ['bed', 'bath', 'acre_lot', 'house_size', 'city', 'state', 'brokered_by']
+X = no_outliers[features]
+
+# Standardize the features for better clustering performance
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+#%%
+# Kmeans clustering
+kmeans = KMeans(n_clusters=1000, random_state=1)
+no_outliers['cluster'] = kmeans.fit_predict(X_scaled)
+#%%
+import pickle
+
+# Save the model
+with open('kmeans.pkl', 'wb') as f:
+    pickle.dump(kmeans, f)
+
+# finding the broker with highest price in a cluster
+cluster_info = no_outliers.groupby('cluster').agg({'price': 'max', 'brokered_by': 'first'}).reset_index()
+cluster_info.to_csv('cluster_info.csv', index=False)
+#%% [markdown]
+# The data is standardized to ensure that all features contribute equally to clustering. KMeans is used to group similar data points into clusters.
+# Clustering helps segment the data into groups of similar properties, identifying patterns in how brokers handle different types of properties.
+
+#%% [markdown]
+# Loading the model
+#%%
+cluster_info = pd.read_csv("cluster_info.csv")
+
+
+with open('kmeans.pkl', 'rb') as f:
+    loaded_kmeans = pickle.load(f)
+#%% [markdown]
+#### Clustering Evaluation using Silhouette Score
+#%%
+from sklearn.metrics import silhouette_score
+
+# Calculate the silhouette score
+silhouette_avg = silhouette_score(X_scaled, loaded_kmeans.labels_)
+print("For n_clusters =", 1000,
+          "The average silhouette_score is :", silhouette_avg)
+
+#%% [markdown]
+# Predicting the highest price and broker for a new house
+#%%
+def predict_price_and_broker(new_house_features):
+    # Standardize the new house data
+    new_house_scaled = scaler.transform([new_house_features])
+
+    # Predict the cluster for the new house
+    predicted_cluster = loaded_kmeans.predict(new_house_scaled)[0]
+
+    # Find the highest price and the broker for the predicted cluster
+    cluster_data = cluster_info[cluster_info['cluster'] == predicted_cluster]
+    highest_price = cluster_data['price'].values[0]
+    best_broker = label_encoder_broker.inverse_transform(cluster_data['brokered_by'].values)[0]
+
+    return highest_price, best_broker
+#%% [markdown]
+# This function predicts the highest possible price and best broker for a new house by first identifying the cluster it belongs to.
+# This predictive model helps realtors or analysts estimate prices and identify brokers who are most likely to secure the highest sale for a new listing based on similar past data.
+#%% [markdown]
+# Example: Predict for a new house
+new_house_data = [3, 3, 0.12, 1200, label_encoder_city.transform(['Adjuntas'])[0], label_encoder_state.transform(['Puerto Rico'])[0], 1]  # New house features
+highest_price, best_broker = predict_price_and_broker(new_house_data)
+
+print(f"Predicted Highest Price: ${highest_price}")
+print(f"Best Broker (ID): {best_broker}")
+
+#%% [markdown]
+# Insights- Broker Analysis
+# - This model helps realtors predict the highest sale price for new listings based on historical data, allowing them to set competitive prices and identify brokers with the highest likelihood of closing a deal at that price point.
+# - By selecting the "best broker" based on past performance in similar property clusters, it ensures that the listing is assigned to a broker who is likely to perform well, increasing the chances of a successful sale.
+
+
+##################################################
+#<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
