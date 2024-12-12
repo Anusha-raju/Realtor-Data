@@ -12,7 +12,7 @@ import scipy.stats as stats
 # Loading the dataset 
 #%%
 plt.figure(figsize=(8, 6))
-realtordata = pd.read_csv("/home/anusha/Downloads/realtor-data.zip.csv")
+realtordata = pd.read_csv("realtor-data.zip.csv")
 realtordata.head()
 
 #%%[markdown]
@@ -98,7 +98,11 @@ plt.show()
 #%% [markdown]
 # There are a few outliers in the bath count variable, hence removing outliers w.r.t bath count (only the upper bound).
 #%%
-upper_bound = 300
+Q1 = realtordata_no_outliers['bath'].quantile(0.25)
+Q3 = realtordata_no_outliers['bath'].quantile(0.75)
+IQR = Q3 - Q1
+upper_bound = Q3 + 1.5 * IQR
+
 realtordata_no_outliers = realtordata_no_outliers[(realtordata_no_outliers['bath'] <= upper_bound)]
 #%% [markdown]
 # Imputing a random value between the max and min of bath variable count.
@@ -109,6 +113,15 @@ realtordata_no_outliers['bath'].loc[realtordata_no_outliers['bath'].isna()] = ra
 #%%
 print("The mean of bath variable before imputing:  ",realtordata_clean.describe()['bath']['mean'] )
 print("The mean of bath variable after imputing:  ", realtordata_no_outliers.describe()['bath']['mean'])
+
+#%%[markdown]
+# Plotting the distribution of bath variable after removing the outliers
+#%%
+plt.hist(realtordata_no_outliers['bath'], bins=40, color='skyblue', edgecolor='black')
+plt.title('Distribution of Bath count')
+plt.xlabel('Value')
+plt.ylabel('Log Frequency')
+plt.show()
 #%%[markdown]
 # The mean of bath variable remains nearly same.
 
@@ -121,15 +134,16 @@ plt.title('Distribution of acre_lot')
 plt.xlabel('Value')
 plt.ylabel('Log Frequency')
 plt.show()
+#%%
+print("The mean of acre_lot variable before imputing:  ",realtordata_no_outliers.describe()['acre_lot']['mean'] )
 
 #%% [markdown]
-# Imputing the median value for acre_lot
+# Imputing the mean value for acre_lot
 #%%
-median_value = realtordata_no_outliers['acre_lot'].median()
-realtordata_no_outliers['acre_lot'].fillna(median_value, inplace=True)
+mean_value = realtordata_no_outliers['acre_lot'].mean()
+realtordata_no_outliers['acre_lot'].fillna(mean_value, inplace=True)
 #%%
-print("The median of acre_lot variable before imputing:  ",realtordata_clean.describe()['acre_lot']['mean'] )
-print("The median of acre_lot variable after imputing:  ", realtordata_no_outliers.describe()['acre_lot']['mean'])
+print("The mean of acre_lot variable after imputing:  ", realtordata_no_outliers.describe()['acre_lot']['mean'])
 
 #%%[markdown]
 # Plotting the distribution of house_size variable
@@ -140,90 +154,154 @@ plt.title('Distribution of house_size')
 plt.xlabel('Value')
 plt.ylabel('Log Frequency')
 plt.show()
+#%%
+print("The mean of house_size variable before imputing:  ",realtordata_no_outliers.describe()['house_size']['mean'] )
 
 #%% [markdown]
 # Imputing the median value for house_size
 #%%
-median_value = realtordata_no_outliers['house_size'].median()
-realtordata_no_outliers['house_size'].fillna(median_value, inplace=True)
+mean_value = realtordata_no_outliers['house_size'].mean()
+realtordata_no_outliers['house_size'].fillna(mean_value, inplace=True)
 #%%
-print("The median of house_size variable before imputing:  ",realtordata_clean.describe()['house_size']['mean'] )
-print("The median of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
+print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
 #%% [markdown]
-# Vizualisations
+# Broker Analysis
+
+## # Grouping by broker to calculate average price per broker
+
+#%%
+broker_performance = realtordata_no_outliers.groupby('brokered_by')['price'].agg(['mean', 'median', 'std', 'count'])
+print("Broker Performance (Average Price, Median Price, Std Deviation, Count of Listings):")
+print(broker_performance)
 
 #%% [markdown]
-# Pivoting data to see how many houses are for_sale in each state
-# %%
-pivot_table = realtordata_no_outliers.pivot_table(
-    index='state', 
-    columns='status', 
-    values='price',  
-    aggfunc='count',
-    fill_value=0  
+## Price by house_size (median price per house size range)
+
+#%%
+realtordata_no_outliers['house_size_category'] = pd.cut(realtordata_no_outliers['house_size'], bins=[0, realtordata_clean['house_size'].quantile(0.25), realtordata_clean['house_size'].quantile(0.50), realtordata_clean['house_size'].quantile(0.75)], labels=['Small', 'Medium', 'Large'])
+house_size_performance = realtordata_no_outliers.groupby(['brokered_by', 'house_size_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by House Size:")
+print(house_size_performance)
+
+
+
+
+#%%[markdown]
+# Price by number of bedrooms
+#%%
+realtordata_no_outliers['bed_category'] = pd.cut(realtordata_no_outliers['bed'], bins=list(range(int(realtordata_no_outliers['bed'].min()-1), int(realtordata_no_outliers['bed'].max())))
+, labels=list(range(int(realtordata_no_outliers['bed'].min()), int(realtordata_no_outliers['bed'].max())))
 )
+bed_performance = realtordata_no_outliers.groupby(['brokered_by', 'bed_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by Number of Bedrooms:")
+print(bed_performance)
+#%% [markdown] Price by lot size (acre_lot)
+#%%
 
-print(pivot_table)
+realtordata_no_outliers['lot_size_category'] = pd.cut(realtordata_no_outliers['acre_lot'], bins=[0, realtordata_clean['acre_lot'].quantile(0.25), realtordata_clean['acre_lot'].quantile(0.50), realtordata_clean['acre_lot'].quantile(0.75)], labels=['Small', 'Medium', 'Large'])
+lot_size_performance = realtordata_no_outliers.groupby(['brokered_by', 'lot_size_category'])['price'].agg(['mean', 'median'])
+print("\nBroker Performance by Lot Size:")
+print(lot_size_performance)
+#%%[markdown]
+# Segment wise analysis
+#%%
+# brokers with the highest average prices
+top_brokers_by_price = broker_performance.sort_values(by='mean', ascending=False).head()
 
-# %%
-for_sale_data = realtordata_no_outliers['status']
-state_counts = realtordata_no_outliers['state'].value_counts() # grouping by
+# brokers that perform best in specific categories
+top_broker_for_large_houses = house_size_performance.loc[house_size_performance['mean'].idxmax()]
+top_broker_for_larger_beds = bed_performance.loc[bed_performance['mean'].idxmax()]
+top_broker_for_large_lots = lot_size_performance.loc[lot_size_performance['mean'].idxmax()]
 
-top_5_states = state_counts.head(5)
+# Output Results
+print("\nTop Brokers by Average Price:")
+print(top_brokers_by_price)
 
-plt.figure(figsize=(10, 6))
-sns.barplot(x=top_5_states.index, y=top_5_states.values, palette='viridis')
+print("\nTop Broker for Large Houses:")
+print(top_broker_for_large_houses)
 
-plt.title('Top 5 States with the Highest Number of Houses For Sales', fontsize=14)
-plt.xlabel('State', fontsize=12)
-plt.ylabel('Number of Houses For_Sale', fontsize=12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
+print("\nTop Broker for Larger Beds:")
+print(top_broker_for_larger_beds)
 
-plt.tight_layout()
-plt.show()
+print("\nTop Broker for Large Acre Lots:")
+print(top_broker_for_large_lots)
 
-# %%
-for_sale_data = realtordata_no_outliers['status']
-city_counts = realtordata_no_outliers['city'].value_counts() # grouping by
-
-top_5_cities = city_counts.head(5)
-
-plt.figure(figsize=(10, 6))
-sns.barplot(x=top_5_cities.index, y=top_5_cities.values, palette='Spectral')
-
-plt.title('Top 5 Cities with the Highest Number of Houses For Sales', fontsize=14)
-plt.xlabel('City', fontsize=12)
-plt.ylabel('Number of Houses For_Sale', fontsize=12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
-
-plt.tight_layout()
-plt.show()
+#%%[markdown]
+# Modelling- Broker Analysis
 
 #%%
-sns.scatterplot(x='bed', y='price', data=realtordata_no_outliers)
-plt.title('Price vs Bedrooms')
-plt.show()
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import mean_squared_error
 
 #%%
-sns.scatterplot(x='house_size', y='price', data=realtordata_no_outliers)
-plt.title('Price vs House Size')
-plt.show()
 
-#%%
-sns.scatterplot(x='acre_lot', y='price', data=realtordata_no_outliers)
-plt.title('Price vs Acre Lot')
-plt.show()
+# Encode categorical variables
+label_encoder_city = LabelEncoder()
+label_encoder_state = LabelEncoder()
+label_encoder_broker = LabelEncoder()
 
-#%%
-corr = realtordata_no_outliers[['price', 'bed', 'bath', 'acre_lot', 'house_size']].corr()
-sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
-plt.title('Correlation Matrix')
-plt.show()
-
+realtordata_no_outliers['city'] = label_encoder_city.fit_transform(realtordata_no_outliers['city'])
+realtordata_no_outliers['state'] = label_encoder_state.fit_transform(realtordata_no_outliers['state'])
+realtordata_no_outliers['brokered_by'] = label_encoder_broker.fit_transform(realtordata_no_outliers['brokered_by'])
 
 
 #%%
+# Select features for clustering
+features = ['bed', 'bath', 'acre_lot', 'house_size', 'city', 'state', 'brokered_by']
+X = realtordata_no_outliers[features]
+
+# Standardize the features for better clustering performance
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+#%%
+
+# Kmeans clustering
+kmeans = KMeans(n_clusters=1000, random_state=1)
+realtordata_no_outliers['cluster'] = kmeans.fit_predict(X_scaled)
+#%%
+import pickle
+
+# Save the model
+with open('kmeans.pkl', 'wb') as f:
+    pickle.dump(kmeans, f)
+#%%
+
+# finding the broker with highest price in a cluster
+cluster_info = realtordata_no_outliers.groupby('cluster').agg({'price': 'max', 'brokered_by': 'first'}).reset_index()
+cluster_info.to_csv('cluster_info.csv', index=False)
+#%%
+# Predicting the highest price and broker for a new house
+def predict_price_and_broker(new_house_features):
+    # Standardize the new house data
+    new_house_scaled = scaler.transform([new_house_features])
+
+    # Predict the cluster for the new house
+    predicted_cluster = loaded_kmeans.predict(new_house_scaled)[0]
+
+    # Find the highest price and the broker for the predicted cluster
+    cluster_data = cluster_info[cluster_info['cluster'] == predicted_cluster]
+    highest_price = cluster_data['price'].values[0]
+    best_broker = label_encoder_broker.inverse_transform(cluster_data['brokered_by'].values)[0]
+
+    return highest_price, best_broker
+
+
+
+#%%
+cluster_info = pd.read_csv("cluster_info.csv")
+
+with open('kmeans.pkl', 'rb') as f:
+    loaded_kmeans = pickle.load(f)
+# Example: Predict for a new house
+new_house_data = [3, 3, 0.12, 1200, label_encoder_city.transform(['Adjuntas'])[0], label_encoder_state.transform(['Puerto Rico'])[0], 1]  # New house features
+highest_price, best_broker = predict_price_and_broker(new_house_data)
+
+print(f"Predicted Highest Price: ${highest_price}")
+print(f"Best Broker (ID): {best_broker}")
+
+
+
 
