@@ -34,7 +34,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 ###############
 
 
-realtordata = pd.read_csv("c:\\Users\\Cashapona\\Documents\\GWU\\Data Mining\\Final Project\\relator-data.csv")
+realtordata = pd.read_csv("realtor-data.zip.csv")
 realtordata.head()
 
 
@@ -159,7 +159,7 @@ no_outliers = no_outliers[no_outliers['bath'] <= upper_bound_bath]
 
 # Imputing a random value between the max and min of bath variable count.
 
-random_values = np.random.uniform(no_outliers['bath'].min(), no_outliers['bath'].max(), size=no_outliers_bath['bath'].isna().sum())
+random_values = np.random.uniform(no_outliers['bath'].min(), no_outliers['bath'].max(), size=no_outliers['bath'].isna().sum())
 no_outliers.loc[no_outliers['bath'].isna(),'bath'] = random_values
 
 # Visualizing the distribution of bath after outlier removal
@@ -188,7 +188,8 @@ print("The mean of acre_lot variable before imputing:  ", no_outliers.describe()
 # Imputing the mean value for acre_lot
 
 mean_value = no_outliers['acre_lot'].mean()
-no_outliers['acre_lot'].fillna(mean_value)
+no_outliers['acre_lot'].fillna(mean_value, inplace=True)
+
 
 print("The mean of acre_lot variable after imputing:  ", no_outliers.describe()['acre_lot']['mean'])
 
@@ -210,7 +211,7 @@ print("The mean of house_size variable before imputing:  ", no_outliers.describe
 # Imputing the mean value for house_size
 
 mean_value = no_outliers['house_size'].mean()
-no_outliers['house_size'].fillna(mean_value)
+no_outliers['house_size'].fillna(mean_value, inplace=True)
 
 print("The mean of house_size variable after imputing:  ", no_outliers.describe()['house_size']['mean'])
 
