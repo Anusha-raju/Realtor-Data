@@ -1,3 +1,4 @@
+
 #%%
 
 
@@ -13,6 +14,7 @@ import seaborn as sns
 
 from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -296,7 +298,7 @@ correlation_matrix = correlation_data.corr()
 
 
 plt.figure(figsize=(10, 8))
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", square=True)
+sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", square=True)
 plt.title('Correlation Heatmap Including Categorical Variables')
 plt.show()
 
