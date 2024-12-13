@@ -479,30 +479,27 @@ plt.show()
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
 
-##################################################
-#<<<<<<<<<<<<<<<< MARKET STATUS >>>>>>>>>>>>>>>>#
+
 #%%
 
+
+#####################
+##  MARKET STATUS  ##
+#####################
+
 # Import necessary libraries
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
+
 from imblearn.over_sampling import SMOTE
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, roc_auc_score
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-#%% Data Preprocessing
-# Assume `no_outliers` is a cleaned dataset with outliers removed
-realtordata_clean = no_outliers
 
 # Encode categorical variables (e.g., property status)
 label_encoder = LabelEncoder()
-realtordata_clean['status_encoded'] = label_encoder.fit_transform(realtordata_clean['status'])
+no_outliers['status_encoded'] = label_encoder.fit_transform(no_outliers['status'])
 
 # Select predictor variables and target variable
-X = realtordata_clean[['bed', 'bath', 'house_size', 'acre_lot']]  # Features
-y = realtordata_clean['status_encoded']  # Target
+X = no_outliers[['bed', 'bath', 'house_size', 'acre_lot']]  # Features
+y = no_outliers['status_encoded']  # Target
 
 # Standardize numerical features for consistent scaling
 scaler = StandardScaler()
@@ -517,7 +514,6 @@ X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
 print("Preprocessing completed successfully.")
 
-#%% Logistic Regression Model
 # Train Logistic Regression model with balanced class weights
 log_reg = LogisticRegression(random_state=42, max_iter=500, class_weight='balanced')
 log_reg.fit(X_train_resampled, y_train_resampled)
@@ -565,12 +561,13 @@ plt.xlabel('Predicted')
 plt.ylabel('Actual')
 plt.show()
 
-#%% ROC Curve and AUC
-# Calculate ROC Curve and AUC
+#%%
+
+# Calculating ROC Curve and AUC
 fpr, tpr, thresholds = roc_curve(y_test, y_test_pred)
 auc = roc_auc_score(y_test, y_test_pred)
 
-# Plot ROC Curve
+# Plotting ROC Curve
 plt.figure(figsize=(8, 6))
 plt.plot(fpr, tpr, color='blue', label=f'ROC Curve (AUC = {auc:.2f})')
 plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random Classifier')
@@ -580,13 +577,20 @@ plt.title('Receiver Operating Characteristic (ROC) Curve')
 plt.legend(loc='lower right')
 plt.show()
 
-# %%
+# %%[markdown]
+
 #Model Performance:​
+#
 #Training Accuracy: 52.94%​
+#
 #Test Accuracy: 51.99%​
+#
 #Key Metrics (Test Data):​
+#
 #For_Sale: Precision: 60%, Recall: 45%, F1-Score: 51%.​
+#
 #Sold: Precision: 46%, Recall: 62%, F1-Score: 53%.​
+#
 #Insights:​
 #Balanced performance between "for_sale" and "sold" categories.​
 #Recall for "sold" is higher, meaning the model identifies most sold properties correctly.​
@@ -985,5 +989,7 @@ print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:
 # Clustering helps optimize marketing, enhance broker performance, and target high-potential properties for tailored sales strategies.
 # The cluster also suggests the broker who is likely to sell the property at a higher price.
 
-#
-#
+# Part 3 - Market Segmentation
+
+# Properties were grouped into Affordable, Mid-Range, and High-End clusters. A silhouette score of 0.20 suggests 
+# room for improvement with additional features and advanced techniques.
