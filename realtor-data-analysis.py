@@ -463,20 +463,17 @@ plt.show()
 
 # Insight
 
-# The inclusion of city variable slightly improved the model's predictive ability for the test set, 
-# as seen in the increase of R^2 score. This suggests that the city variable captures some location-specific 
-# variation in property prices, which was missing in the first model. However, the improvement 
-# is relatively very small, with a significant amount of unexplained variability in property prices
-# And the R^2 for training set remains low and identical to first model showcasing underfitting.
+# The inclusion of city variable slightly improved the model's predictive ability for the train set, 
+# as seen in the increase of R^2 score. But however we can see significant decrease in the accuracy of test set
+# compared to the first linear regresison model's accuracy. This suggests city has additional explanatory 
+# power for target variable. There is a significant amount of unexplained variability in property prices.
 
 # Overall insights
 
-# Both the models show very low R^2 values on the training set and marginally better performance on 
-# the test sets. This consistent low R^2 indicates that the models fail to capture most of 
-# the variability in property prices, suggesting weak or non-existent linear relationships 
-# between the predictors and the target variable. While adding city to the model slighty 
-# improved test score, it wasn't sufficient to improve model predictions. We can also see the 
-# reflection of consistent underfitting.
+# Both the models show very low R^2 values on the training set and test sets. This consistent low accuracy 
+# indicates that the model fail to capture most of the variability in property prices, suggesting weak or 
+# non-existent linear relationships between the predictors and the target variable. While adding city did
+# nothing much to improve model predictions. 
 
 
 ##################################################
