@@ -979,17 +979,24 @@ print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:
 
 #%% [markdown]
 
-# Part 1 - Price Prediction
+## Part 1 - Price Prediction
 
 # Predicting the property price did not give us good accuracy at all. Since the data is such that it's features
 # are unable to accurately predict price, this has turned to be a limitation to us in this whole analysis.
 
-# Part 2 - Broker Analysis 
+## Part 2 - Market Status 
+
+#Balanced performance between "for_sale" and "sold" categories.​
+#Recall for "sold" is higher, meaning the model identifies most sold properties correctly.​
+#Overall accuracy indicates the need for further refinement.
+
+
+## Part 3- Broker Analysis 
 
 # Clustering helps optimize marketing, enhance broker performance, and target high-potential properties for tailored sales strategies.
 # The cluster also suggests the broker who is likely to sell the property at a higher price.
 
-# Part 3 - Market Segmentation
+## Part 4- Market Segmentation
 
 # Properties were grouped into Affordable, Mid-Range, and High-End clusters. A silhouette score of 0.20 suggests 
 # room for improvement with additional features and advanced techniques.
