@@ -480,6 +480,126 @@ plt.show()
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
 
 
+#%%
+
+
+#####################
+##  MARKET STATUS  ##
+#####################
+
+# Import necessary libraries
+
+from imblearn.over_sampling import SMOTE
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, roc_auc_score
+
+# Encode categorical variables (e.g., property status)
+label_encoder = LabelEncoder()
+no_outliers['status_encoded'] = label_encoder.fit_transform(no_outliers['status'])
+
+# Select predictor variables and target variable
+X = no_outliers[['bed', 'bath', 'house_size', 'acre_lot']]  # Features
+y = no_outliers['status_encoded']  # Target
+
+# Standardize numerical features for consistent scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split data into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42, stratify=y)
+
+# Address class imbalance using SMOTE
+smote = SMOTE(random_state=42)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+print("Preprocessing completed successfully.")
+
+# Train Logistic Regression model with balanced class weights
+log_reg = LogisticRegression(random_state=42, max_iter=500, class_weight='balanced')
+log_reg.fit(X_train_resampled, y_train_resampled)
+
+# Predictions for training and testing datasets
+y_train_pred = log_reg.predict(X_train_resampled)
+y_test_pred = log_reg.predict(X_test)
+
+# Calculate accuracy scores
+train_accuracy = accuracy_score(y_train_resampled, y_train_pred)
+test_accuracy = accuracy_score(y_test, y_test_pred)
+
+# Print accuracy scores
+print(f"Training Accuracy: {train_accuracy:.4f}")
+print(f"Test Accuracy: {test_accuracy:.4f}")
+
+#%% Evaluation Metrics
+# Classification report for training data
+print("\nClassification Report (Training Data):\n")
+print(classification_report(y_train_resampled, y_train_pred, target_names=label_encoder.classes_))
+
+# Classification report for test data
+print("\nClassification Report (Test Data):\n")
+print(classification_report(y_test, y_test_pred, target_names=label_encoder.classes_))
+
+# Confusion Matrices
+conf_matrix_train = confusion_matrix(y_train_resampled, y_train_pred)
+conf_matrix_test = confusion_matrix(y_test, y_test_pred)
+
+# Visualize Confusion Matrix for Training Data
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_train, annot=True, fmt='d', cmap='Blues',
+            xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
+plt.title('Confusion Matrix (Training Data)')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# Visualize Confusion Matrix for Test Data
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_test, annot=True, fmt='d', cmap='Blues',
+            xticklabels=label_encoder.classes_, yticklabels=label_encoder.classes_)
+plt.title('Confusion Matrix (Test Data)')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+#%%
+
+# Calculating ROC Curve and AUC
+fpr, tpr, thresholds = roc_curve(y_test, y_test_pred)
+auc = roc_auc_score(y_test, y_test_pred)
+
+# Plotting ROC Curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='blue', label=f'ROC Curve (AUC = {auc:.2f})')
+plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random Classifier')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
+
+# %%[markdown]
+
+#Model Performance:​
+#
+#Training Accuracy: 52.94%​
+#
+#Test Accuracy: 51.99%​
+#
+#Key Metrics (Test Data):​
+#
+#For_Sale: Precision: 60%, Recall: 45%, F1-Score: 51%.​
+#
+#Sold: Precision: 46%, Recall: 62%, F1-Score: 53%.​
+#
+#Insights:​
+#Balanced performance between "for_sale" and "sold" categories.​
+#Recall for "sold" is higher, meaning the model identifies most sold properties correctly.​
+#Overall accuracy indicates the need for further refinement.
+
+##################################################
+#<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
+
+
 
 #%%
 
@@ -694,19 +814,27 @@ print(f"Best Broker (ID): {best_broker}")
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
 
+
+
 #%%
-#############################################
-# Import necessary libraries
-#############################################
+
+
+############################
+##  Market Segmentation   ##
+############################
+
+
+# Import necessary libraries 
+
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import silhouette_score
 
 #%%
-#############################################
-# Step 1: Sampling the data for efficiency
-#############################################
-# Limit data to 1,000 samples per state to ensure a manageable dataset for clustering.
+
+
+# Sampling the data (Stratified Random Sampling)
+
 sample_per_state = 1000  # Number of samples per state
 
 sampled_data = (
@@ -717,29 +845,29 @@ sampled_data = (
 
 # Check the resulting dataset
 print(f"Sampled data shape: {sampled_data.shape}")
-print(sampled_data['state'].value_counts())  # Verify sample distribution across states
-#%%
-#############################################
-# Step 2: Data Preprocessing
-#############################################
+print(sampled_data['state'].value_counts())  
 
-# 2.1 Scale numerical features
+#%%
+
+# Scaling numerical features
 numeric_features = ['price', 'house_size', 'bed', 'bath', 'acre_lot']
 scaler = StandardScaler()
-scaled_numeric = scaler.fit_transform(sampled_data[numeric_features])  # Normalize data
+scaled_numeric = scaler.fit_transform(sampled_data[numeric_features])  # Normalizing data
 
-# 2.2 Encode categorical features (city, state)
+# Encoding categorical features (city, state)
 categorical_features = ['city', 'state']
 encoder = OneHotEncoder()
 encoded_categorical = encoder.fit_transform(sampled_data[categorical_features]).toarray()
 
-# 2.3 Combine scaled numerical and encoded categorical data
+# Combining scaled numerical and encoded categorical data
 data_scaled_sampled = np.hstack((scaled_numeric, encoded_categorical))
 print(f"Combined scaled data shape: {data_scaled_sampled.shape}")
+
+
 #%%
-#############################################
-# Step 3: Determine Optimal Clusters using Elbow Method
-#############################################
+
+# Determining Optimal Clusters using Elbow Method
+
 silhouette_scores = []
 for k in range(2, 10):  # Test cluster numbers from 2 to 9
     kmeans = KMeans(n_clusters=k, random_state=42)
@@ -755,28 +883,29 @@ plt.show()
 
 # Outcome: The optimal number of clusters is 3.
 #%%
-#############################################
-# Step 4: Apply K-Means Clustering
-#############################################
+
+# Applying K-Means Clustering
+
 optimal_clusters = 3  # Based on Elbow Method
 kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
 sampled_data['kmeans_cluster'] = kmeans.fit_predict(data_scaled_sampled)
-#%%
-#############################################
-# Step 5: Composite Scoring
-#############################################
-# Combine scaled numeric and encoded categorical feature names
+
+# Combining scaled numeric and encoded categorical feature names
+
 encoded_feature_names = encoder.get_feature_names_out(categorical_features)
 features = numeric_features + list(encoded_feature_names)
 
-# Extract one-hot encoded features for state and city
+# Extracting one-hot encoded features for state and city
+
 state_features = [feature for feature in encoded_feature_names if feature.startswith('state_')]
 city_features = [feature for feature in encoded_feature_names if feature.startswith('city_')]
 
-# Create a DataFrame for cluster centroids
+# Creating a DataFrame for cluster centroids
+
 centroids = pd.DataFrame(kmeans.cluster_centers_, columns=features)
 
-# Assign weights for composite scoring
+# Assigning weights for composite scoring
+
 weights = {
     'price': 0.4,
     'house_size': 0.3,
@@ -787,7 +916,8 @@ weights = {
     'city': 0.05    # All city features combined
 }
 
-# Compute composite score for each cluster
+# Computing composite score for each cluster
+
 centroids['composite_score'] = (
     centroids['price'] * weights['price'] +
     centroids['house_size'] * weights['house_size'] +
@@ -798,17 +928,18 @@ centroids['composite_score'] = (
     centroids[city_features].sum(axis=1) * weights['city']
 )
 
-# Sort centroids by composite score and assign categories
+# Sorting centroids by composite score and assign categories
+
 sorted_centroids = centroids.sort_values(by='composite_score').reset_index()
 cluster_mapping = {sorted_centroids.iloc[i].name: label for i, label in enumerate(['Affordable', 'Mid-Range', 'High-End'])}
 sampled_data['category'] = sampled_data['kmeans_cluster'].map(cluster_mapping)
 
 # Outcome: Each property is categorized into Affordable, Mid-Range, or High-End.
+
 #%%
-#############################################
-# Step 6: Visualization
-#############################################
+
 # Scatter plot of house size vs. price, colored by category
+
 sns.scatterplot(
     x=sampled_data['house_size'],
     y=sampled_data['price'],
@@ -823,15 +954,49 @@ plt.legend(title='Category')
 plt.show()
 
 # Outcome: Visual confirmation of clustering with distinct categories.
+
 #%%
-#############################################
-# Step 7: Evaluate Clustering Quality
-#############################################
+
 # Calculate silhouette score for the final clustering
+
 silhouette_avg = silhouette_score(data_scaled_sampled, sampled_data['kmeans_cluster'])
 print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:.2f}")
 
 # Outcome: The silhouette score  0.20 indicates modest cluster quality.
 
+
 ##################################################
 #<<<<<<<<<<<<<<<< End of Section >>>>>>>>>>>>>>>>#
+
+
+
+#%%
+
+
+###################################
+##         Conclusion            ##
+###################################
+
+#%% [markdown]
+
+## Part 1 - Price Prediction
+
+# Predicting the property price did not give us good accuracy at all. Since the data is such that it's features
+# are unable to accurately predict price, this has turned to be a limitation to us in this whole analysis.
+
+## Part 2 - Market Status 
+
+#Balanced performance between "for_sale" and "sold" categories.​
+#Recall for "sold" is higher, meaning the model identifies most sold properties correctly.​
+#Overall accuracy indicates the need for further refinement.
+
+
+## Part 3- Broker Analysis 
+
+# Clustering helps optimize marketing, enhance broker performance, and target high-potential properties for tailored sales strategies.
+# The cluster also suggests the broker who is likely to sell the property at a higher price.
+
+## Part 4- Market Segmentation
+
+# Properties were grouped into Affordable, Mid-Range, and High-End clusters. A silhouette score of 0.20 suggests 
+# room for improvement with additional features and advanced techniques.

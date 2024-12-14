@@ -165,7 +165,9 @@ realtordata_no_outliers['house_size'].fillna(mean_value, inplace=True)
 #%%
 print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
+#%% [markdown]
 #####################################
+Market Segmentation
 #################################
 #%%
 # Import necessary libraries
@@ -244,6 +246,7 @@ plt.show()
 silhouette_avg = silhouette_score(data_scaled_sampled, sampled_data['kmeans_cluster'])
 print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:.2f}")
 
-#%%
+#%% [markdown]
+silhouette score of 0.20 indicates modest amount of cluster separation 
 ##############################
 #########################################
