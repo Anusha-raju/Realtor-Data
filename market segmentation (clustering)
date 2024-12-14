@@ -247,6 +247,6 @@ silhouette_avg = silhouette_score(data_scaled_sampled, sampled_data['kmeans_clus
 print(f"Silhouette Score for K-Means Clustering (Sampled Data): {silhouette_avg:.2f}")
 
 #%% [markdown]
-silhouette score of 0.20 indicates modest cluster separation 
+silhouette score of 0.20 indicates modest amount of cluster separation 
 ##############################
 #########################################
