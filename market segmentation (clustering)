@@ -165,7 +165,9 @@ realtordata_no_outliers['house_size'].fillna(mean_value, inplace=True)
 #%%
 print("The mean of house_size variable after imputing:  ", realtordata_no_outliers.describe()['house_size']['mean'])
 
+#%% [markdown]
 #####################################
+Market Segmentation
 #################################
 #%%
 # Import necessary libraries
