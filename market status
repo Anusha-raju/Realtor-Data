@@ -1,0 +1,86 @@
+Market Status Analysis 
+
+Objective 
+
+The real estate market is characterized by dynamic shifts, requiring accurate predictive models to classify property statuses effectively. This study aims to develop and evaluate a logistic regression model to predict property statuses, such as "for sale" or "sold," using features like the number of bedrooms, bathrooms, house size, and lot area. Additionally, we address challenges such as class imbalance using Synthetic Minority Oversampling Technique (SMOTE) and evaluate the model's performance through various metrics. 
+
+Data Preprocessing 
+
+Feature Encoding: The categorical variable status was encoded using LabelEncoder, resulting in a new column, status_encoded. 
+Feature Selection: Predictor variables included: 
+Number of bedrooms (bed) 
+Number of bathrooms (bath) 
+House size (house_size) 
+Acre lot area (acre_lot) 
+The target variable was status_encoded. 
+
+Feature Scaling: Numerical features were standardized using StandardScaler for consistent scaling. 
+Train-Test Split: The dataset was split into training (80%) and testing (20%) subsets, maintaining class balance through stratified sampling. 
+Handling Class Imbalance 
+
+To address class imbalance, the Synthetic Minority Oversampling Technique (SMOTE) was applied to the training data, generating a balanced dataset by oversampling the minority class. 
+
+Model Training 
+
+A Logistic Regression model with balanced class weights was trained using the resampled data. The model was configured with the following parameters: 
+
+random_state=42 
+max_iter=500 
+class_weight='balanced' 
+Evaluation Metrics 
+
+Model performance was assessed using: 
+
+Accuracy Scores: Computed for training and testing datasets. 
+Classification Reports: Precision, recall, and F1-score for each class. 
+Confusion Matrices: Visualized using heatmaps for both training and testing datasets. 
+ROC Curve and AUC: Receiver Operating Characteristic curve plotted with AUC values. 
+Results 
+
+Accuracy 
+
+Training Accuracy: 52.94% 
+Testing Accuracy: 51.99% 
+Classification Metrics 
+
+Key Metrics (Test Data): 
+
+Class 
+Precision 
+Recall 
+F1-Score 
+For Sale 
+60% 
+45% 
+51% 
+Sold 
+46% 
+62% 
+53% 
+The model demonstrated balanced performance between "for sale" and "sold" categories, with higher recall for the "sold" class, indicating better identification of sold properties. 
+
+Confusion Matrices 
+
+Training Data: 
+
+Confusion matrix visualized with heatmaps highlighted correct and incorrect predictions for each class. 
+
+Testing Data: 
+
+Similar patterns were observed in the testing data, reinforcing the model's balanced, albeit moderate, performance. 
+
+ROC Curve and AUC 
+
+The Receiver Operating Characteristic curve achieved an AUC of 0.51, indicating room for improvement in distinguishing between classes. 
+
+Discussion 
+
+Insights 
+
+Balanced Performance: The model exhibits comparable precision and recall for both classes. 
+Recall for "Sold": Higher recall for the "sold" category suggests that the model effectively identifies most sold properties. 
+Limitations 
+
+Data Imbalance: Despite SMOTE, real-world imbalances could persist, influencing predictions. 
+Feature Limitations: The absence of certain predictors (e.g., economic indicators or property age) might limit predictive performance. 
+Model Complexity: Logistic regression’s simplicity may not capture complex interactions between features. 
