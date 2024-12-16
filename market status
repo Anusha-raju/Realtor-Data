@@ -1,3 +1,43 @@
+Exploratory Data Analysis 
+Key Visualizations and Insights 
+
+Distribution of Houses for Sale 
+Bar plots highlighted the top-performing states and cities in terms of house listings. Florida, California, and Texas emerged as the states with the largest inventories, while Houston and Chicago recorded the highest city-level concentrations. 
+These observations revealed significant regional variations in housing supply, potentially driven by economic and demographic factors. 
+Inserting image...Inserting image... 
+Bedroom and Bathroom Distributions 
+Pre-Cleaning: Histograms on a log scale revealed extreme outliers, including houses with implausibly large bedroom or bathroom counts. 
+Inserting image... 
+ 
+
+Post-Cleaning: The removal of upper-bound outliers resulted in a normalized distribution, with most houses containing 2-4 bedrooms and 2-3 bathrooms. 
+ 
+These results confirmed a clustering of housing features around standard residential configurations. 
+Lot Size Analysis (acre_lot) 
+Pre-Imputation: Visualizations indicated a heavy concentration of smaller lot sizes, with a small subset of extreme values. 
+ 
+Post-Imputation: Missing values were replaced with the mean, ensuring a more standardized distribution suitable for downstream analysis. 
+ 
+ 
+House Size Analysis (house_size) 
+Pre-Imputation: Log-scaled histograms identified a long tail of unusually large houses, likely reflecting anomalies in the data collection process. 
+ 
+Post-Imputation: Imputation with the mean resulted in a more consistent representation of house sizes, albeit retaining a positive skew reflective of real-world housing market dynamics. 
+ 
+Correlation Analysis 
+A comprehensive correlation heatmap was generated to assess pairwise relationships among numerical features. 
+Inserting image... 
+Key Observations: 
+A strong positive correlation (r > 0.6) was observed between house_size and price, reinforcing the hypothesis that larger homes are generally priced higher. 
+Moderate positive correlations were detected between bed, bath, and house_size, reflecting logical dependencies between these variables. 
+Weak correlations between acre_lot and other features indicated that lot size may be influenced by external factors such as location or zoning regulations. 
+The correlation analysis was instrumental in guiding the selection of features for     subsequent modeling phases. 
+
+Interpretation 
+
+The systematic execution of EDA in this study facilitated a detailed understanding of the dataset's structure and quality. Key patterns, trends, and relationships were uncovered, and data irregularities such as missing values and outliers were effectively addressed. The insights gained from EDA provided a robust foundation for informed decision-making in feature selection, model development, and hypothesis testing. Additionally, the findings highlighted actionable insights into spatial and structural trends in the housing market, particularly with respect to price determinants and regional supply variations. 
+
+
 Market Status Analysis 
 
 Objective 
